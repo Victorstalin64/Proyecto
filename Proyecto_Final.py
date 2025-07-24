@@ -7,6 +7,34 @@ archivo = "usuarios.txt"
 ninjas_archivo = "ninjas.txt"
 habilidades = "habilidades_ninja.txt"
 usuarios = []
+arboles_ninja = {}
+
+#crear arbol de habilidades de cada ninja
+class NodoHabilidad:
+    def __init__(self, nombre, puntos):
+        self.nombre = nombre
+        self.puntos = puntos
+        self.izq = None
+        self.der = None
+def crear_arbol_personalizado(nombre_ninja):
+    print(f"\n--- Asignar habilidades a {nombre_ninja} ---")
+    habilidades = []
+    for i in range(1, 5):
+        habilidad = input(f"Ingrese habilidad {i}: ").strip()
+        habilidades.append(habilidad)
+
+    raiz = NodoHabilidad(habilidades[0], random.randint(6, 10))
+    raiz.izq = NodoHabilidad(habilidades[1], random.randint(6, 10))
+    raiz.der = NodoHabilidad(habilidades[2], random.randint(6, 10))
+    raiz.izq.izq = NodoHabilidad(habilidades[3], random.randint(6, 10))
+
+    return raiz
+def mostrar_habilidades(nodo, nivel=0):
+    if nodo:
+        print("  " * nivel + f"{nodo.nombre}")
+        mostrar_habilidades(nodo.izq, nivel + 1)
+        mostrar_habilidades(nodo.der, nivel + 1)    
+
 
 #ROL ADMINISTRADOR 
 def login_administrador():
@@ -28,7 +56,10 @@ def menu_administrador():
     print("2. Listar ninjas")
     print("3. Consultar ninja")
     print("4. Actualizar atributos de un ninja")
-    print("5. Salir")
+    print("5. Eliminar ninja")
+    print("6. Crear arbol de habilidades ninja")
+    print("7. Guardar cambios")
+    print("0. Salir")
 
 def leer_ninjas():
     ninjas = []
@@ -119,6 +150,15 @@ def buscar_ninja(lista_ninjas):
         else: 
             izq = med + 1
     print("No se encontro ninja")
+
+def crer_arbol_para_ninja():
+    nombre = input("Nombre del ninja para asignar habilidades: ").strip()
+    if nombre == "":
+        print("Nombre inválido.")
+        return
+    arbol = crear_arbol_personalizado(nombre)
+    arboles_ninja[nombre] = arbol
+    print(f"Arbol de habilidades creado y guardado para {nombre}.")
 
 #ROL JUGADOR
 def menu_jugador():
@@ -214,6 +254,28 @@ def iniciar_sesion(iniciar):
         print("No se pudo iniciar sesion. Usuario o contraseña incorrecta")
         return None
     
+def ver_arbol_jugador():
+    if not arboles_ninja:
+        print("No hay árboles de habilidades disponibles.")
+        return
+    
+    print("\nNinjas con habilidades disponibles:")
+    for i, nombre in enumerate(arboles_ninja.keys(), 1):
+        print(f"{i}. {nombre}")
+    
+    try:
+        seleccion = int(input("Seleccione un ninja por número: "))
+        nombres = list(arboles_ninja.keys())
+        if 1 <= seleccion <= len(nombres):
+            ninja_seleccionado = nombres[seleccion - 1]
+            print(f"\nÁrbol de habilidades de {ninja_seleccionado}:")
+            mostrar_habilidades(arboles_ninja[ninja_seleccionado])
+        else:
+            print("No valido. Intenta de nuevo")
+    except:
+        print("Entrada no válida.")
+
+    
 #Bucle 
 while True:
     print("--------MENU PRINCIPAL---------")
@@ -236,8 +298,11 @@ while True:
             elif admin_opcion == 3:
                 ninjas_lista = leer_ninjas()
                 buscar_ninja(ninjas_lista)
-            elif admin_opcion == 5:
-                print("Saliendo del administrador....")
+                #falta agregar opciones 4 y 5
+            elif admin_opcion == 6:
+                crer_arbol_para_ninja()
+            elif admin_opcion == 0:
+                print("Saliendo del administrador.")
                 break
             else: 
                 print("Opcion ingresada no valida")
@@ -251,8 +316,10 @@ while True:
             elif opciones == 2:
                 lis = usuarios_registrados()
                 usuario_actual = iniciar_sesion(lis)
-            elif opciones == 5:
-                print("Saliendo del juego....")
+            elif opciones == 3:
+                ver_arbol_jugador()
+            elif opciones == 0:
+                print("Saliendo del juego.")
                 break
             else:
                 print("Opcion no valida")
