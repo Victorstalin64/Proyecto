@@ -77,6 +77,7 @@ def leer_ninjas():
                 })
     return ninjas 
 
+
 def guardar_ninjas(lista_ninjas):
     try:
         with open(ninjas_archivo, "w",encoding="utf-8") as f:
@@ -318,7 +319,7 @@ while True:
                 usuario_actual = iniciar_sesion(lis)
             elif opciones == 3:
                 ver_arbol_jugador()
-            elif opciones == 0:
+            elif opciones == 5:
                 print("Saliendo del juego.")
                 break
             else:
