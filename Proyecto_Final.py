@@ -152,6 +152,30 @@ def buscar_ninja(lista_ninjas):
             izq = med + 1
     print("No se encontro ninja")
 
+def ninja_a_actualizar(lista_de_ninjas):
+    nombre = input("Ingrese el nombre del ninja a actualizar: ").strip()
+    for ninja in lista_de_ninjas:
+        if ninja['Nombre'].lower() == nombre.lower():
+            print(f"Ninja encontrado: {ninja}")
+            estilo_nuevo = input("Ingrese el nuevo estilo de pelea: ")
+            rango_nuevo = input("Ingrese el nuevo rango (Si desea mantener el rango presione enter): ")
+            if estilo_nuevo:
+                ninja['Estilo'] = estilo_nuevo
+            if rango_nuevo:
+                ninja ['Rango'] = rango_nuevo
+            print("🥷✅El ninja ha sido actuaizado correctamente")
+            return
+    print("🥷❎Ninja no encontrado")
+
+def eliminar_ninja(lista_de_ninjas):
+    nombre_eliminar = input("Ingrese el nombre del ninja a eliminar: ").strip()
+    for ninja in lista_de_ninjas:
+        if ninja['Nombre'].lower() == nombre_eliminar.lower():
+            lista_de_ninjas.remove(ninja)
+            print(f"🚯El ninja '{nombre_eliminar}' eliminado correctamente.")
+            return
+    print("🥷❎Ninja no encontrado. Error al eliminar ninja")
+    
 def crer_arbol_para_ninja():
     nombre = input("Nombre del ninja para asignar habilidades: ").strip()
     if nombre == "":
@@ -299,7 +323,14 @@ while True:
             elif admin_opcion == 3:
                 ninjas_lista = leer_ninjas()
                 buscar_ninja(ninjas_lista)
-                #falta agregar opciones 4 y 5
+            elif admin_opcion == 4:
+                ninjas_lista = leer_ninjas()
+                ninja_a_actualizar(ninjas_lista)
+                guardar_ninjas(ninjas_lista)
+            elif admin_opcion == 5:
+                ninjas_lista = leer_ninjas()
+                eliminar_ninja(ninjas_lista)
+                guardar_ninjas(ninjas_lista)
             elif admin_opcion == 6:
                 crer_arbol_para_ninja()
             elif admin_opcion == 0:
