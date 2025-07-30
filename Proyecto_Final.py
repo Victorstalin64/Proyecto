@@ -3,6 +3,7 @@ from io import open #Abrir archivos compatibles con python
 import os  #Verificacion de archivos
 import re  #Validar patrones de texto
 import random #Numeros aleatorios 
+from collections import deque
 
 archivo = "usuarios.txt"
 ninjas_archivo = "ninjas.txt"
@@ -17,6 +18,12 @@ class NodoHabilidad:
         self.puntos = puntos
         self.izq = None
         self.der = None
+
+def sumar_habilidades(nodo):
+    if nodo is None:
+        return 0
+    return (nodo.puntos + sumar_habilidades(nodo.izq) + sumar_habilidades(nodo.der))
+
 def crear_arbol_personalizado(nombre_ninja):
     print(f"\n--- Asignar habilidades a {nombre_ninja} ---")
     habilidades = []
@@ -24,15 +31,18 @@ def crear_arbol_personalizado(nombre_ninja):
         habilidad = input(f"Ingrese habilidad {i}: ").strip()
         habilidades.append(habilidad)
 
-    raiz = NodoHabilidad(habilidades[0], random.randint(6, 10))
-    raiz.izq = NodoHabilidad(habilidades[1], random.randint(6, 10))
-    raiz.der = NodoHabilidad(habilidades[2], random.randint(6, 10))
-    raiz.izq.izq = NodoHabilidad(habilidades[3], random.randint(6, 10))
+    raiz = NodoHabilidad(habilidades[0], random.randint(5, 10))
+    raiz.izq = NodoHabilidad(habilidades[1], random.randint(5, 10))
+    raiz.der = NodoHabilidad(habilidades[2], random.randint(5, 10))
+    raiz.izq.izq = NodoHabilidad(habilidades[3], random.randint(5, 10))
 
     return raiz
+ninjas =[]
+
+
 def mostrar_habilidades(nodo, nivel=0):
     if nodo:
-        print("  " * nivel + f"{nodo.nombre}")
+        print("  " * nivel + f"{nodo.nombre} {nodo.puntos}")
         mostrar_habilidades(nodo.izq, nivel + 1)
         mostrar_habilidades(nodo.der, nivel + 1)    
 
@@ -185,6 +195,26 @@ def crear_arbol_para_ninja():
     arboles_ninja[nombre] = arbol
     print(f"Arbol de habilidades creado y guardado para {nombre}.")
 
+def guardar_habilidades_ninja(habilidades):
+    try:
+        with open(habilidades, "w", encoding="utf-8") as f:
+            for nombre, arbol in arboles_ninja.items():
+                f.write(f"{nombre}\n")
+                mostrar_habilidades(arbol, nivel=1)
+        print("Habilidades guardadas correctamente.")
+    except Exception as e:
+        print(f"Error al guardar habilidades: {e}")
+
+def guardar_cambios_en_archivo_original():
+    try:
+        with open(ninjas_archivo, "w", encoding="utf-8") as f:
+            for nombre, arbol in arboles_ninja.items():
+                f.write(f"{nombre}\n")
+                mostrar_habilidades(arbol, nivel=1)
+        print("Cambios guardados correctamente.")
+    except Exception as e:
+        print(f"Error al guardar cambios: {e}")
+
 #ROL JUGADOR
 def menu_jugador():
     print("-----MENU JUGADOR-----")
@@ -192,9 +222,9 @@ def menu_jugador():
     print("2. Iniciar sesión")
     print("3. Ver arbol de habilidades ninja")
     print("4. Simular combate 1 vs 1")
-    print("5. Simular torneo completo")
-    print("6. Consultar el ranking actualizado")
-    print("7. Guardar progreso ")
+    print("5. Simular rondas del torneo")
+    print("6. Consultar ranking")
+    print("Guardar progreso")
     print("0. Salir")
 
 def validar_correo(correo):
@@ -222,7 +252,7 @@ def verificar_credencial(usuario,contraseña,lista_usuarios):
 def agregar_usuario(nuevos_usuarios):
     nombre = input("Nombre Completo: ")
     while True:
-        identificacion = input("Identificacion: ")
+        identificacion = int(input("Identificacion: "))
         if len(identificacion) > 10:
             print("Identificacion no valida: ")
         else:
@@ -303,6 +333,60 @@ def ver_arbol_jugador():
     except:
         print("Entrada no válida.")
 
+ninjas_pelea = {nombre: crear_arbol_personalizado(nombre) for nombre in ninjas} 
+#simular rondas del torneo
+def ronda(nombre_ronda,participantes, ninjas_pelea):
+    print(f"{nombre_ronda.upper()} {len(participantes)} ninjas")
+    cola = deque(participantes)
+    siguiente_ronda = []
+    while len(cola) > 0:
+        ninja1 = cola.popleft()
+        ninja2 = cola.popleft()
+
+        print(f"{ninja1} vs {ninja2}")
+        puntos1 = sumar_habilidades(ninjas_pelea[ninja1])
+        puntos2 = sumar_habilidades(ninjas_pelea[ninja2])
+
+        print(f"Puntos de {ninja1}: {puntos1}")
+        print(f"Puntos de {ninja2}: {puntos2}")
+        
+        if puntos1 > puntos2:
+            ganador = ninja1
+        elif puntos2 > puntos1:
+            ganador = ninja2
+        else:
+            ganador = random.choice([ninja1, ninja2])
+
+        print(f"Ganador: {ganador} \n")
+        siguiente_ronda.append(ganador)
+    return   siguiente_ronda
+
+def simular_torneo_jugador():
+    print("Bienvenido al torneo de ninjas")
+
+    if not arboles_ninja:
+        print("No hay árboles de habilidades suficientes para un torneo.")
+        return
+    
+    participantes = list(ninjas_pelea.keys())
+    if len(participantes) < 2:
+        print("No hay suficientes ninjas para iniciar el torneo.")
+        return
+     
+    rondas=["Dieciseisavos", "Octavos", "Cuartos", "Semifinales", "Final"]
+
+
+    for nombre_ronda in rondas:
+        if len(participantes) ==1:
+            break
+        participantes = ronda(nombre_ronda, participantes, ninjas_pelea)
+
+    if participantes:
+        campeon=participantes[0]
+        print(f"🥷🏆 \nEl campeón del torneo es: {campeon}")
+        print(f"\n Habilidades del: {campeon}")
+        mostrar_habilidades(ninjas_pelea[campeon])
+
 def habilidades_con_ninja(nodo):
     if nodo is None:
         return 0
@@ -355,7 +439,6 @@ def simulacion_de_combate():
         f.write(f"{primer_ninja_seleccionado['Nombre']} VS {segundo_ninja_seleccionado['Nombre']} ➡️ Ganador: {ganador}\n")
         print("✅Resultado de los combates 1 vs 1 guardado correctamente.")
 
-
 #Bucle 
 while True:
     print("--------MENU PRINCIPAL---------")
@@ -388,6 +471,9 @@ while True:
                 guardar_ninjas(ninjas_lista)
             elif admin_opcion == 6:
                 crear_arbol_para_ninja()
+                guardar_habilidades_ninja(habilidades)
+            elif admin_opcion == 7:
+                guardar_cambios_en_archivo_original()
             elif admin_opcion == 0:
                 print("Saliendo del administrador.")
                 break
@@ -408,6 +494,8 @@ while True:
             elif opciones == 4:
                 simulacion_de_combate()
             elif opciones == 5:
+                simular_torneo_jugador()
+            elif opciones == 0:
                 print("Saliendo del juego.")
                 break
             else:
