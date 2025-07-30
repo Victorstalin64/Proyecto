@@ -2,6 +2,7 @@ from io import open #Abrir archivos compatibles con python
 import os  #Verificacion de archivos
 import re  #Validar patrones de texto
 import random #Numeros aleatorios 
+from collections import deque
 
 archivo = "usuarios.txt"
 ninjas_archivo = "ninjas.txt"
@@ -36,7 +37,7 @@ def crear_arbol_personalizado(nombre_ninja):
 
     return raiz
 ninjas =[]
-ninjas_pelea = {nombre: crear_arbol_personalizado() for nombre in ninjas} 
+
 
 def mostrar_habilidades(nodo, nivel=0):
     if nodo:
@@ -330,10 +331,10 @@ def ver_arbol_jugador():
     except:
         print("Entrada no válida.")
 
-
+ninjas_pelea = {nombre: crear_arbol_personalizado(nombre) for nombre in ninjas} 
 #simular rondas del torneo
-   
-def ronda(nombre_ronda,participantes):
+
+def ronda(nombre_ronda,participantes, ninjas_pelea):
     print(f"{nombre_ronda.upper()} {len(participantes)} ninjas")
     cola = deque(participantes)
     siguiente_ronda = []
@@ -359,19 +360,31 @@ def ronda(nombre_ronda,participantes):
         siguiente_ronda.append(ganador)
     return   siguiente_ronda
 
-print("Bienvenido al torneo de ninjas")
-rondas=["Dieciseisavos", "Octavos", "Cuartos", "Semifinales", "Final"]
-participantes = ninjas_pelea[:]
+def simular_torneo_jugador():
+    print("Bienvenido al torneo de ninjas")
 
-for nombre_ronda in rondas:
-    if len(participantes) ==1:
-        break
-    participantes = ronda(nombre_ronda, participantes)
+    if not arboles_ninja:
+        print("No hay árboles de habilidades suficientes para un torneo.")
+        return
+    
+    participantes = list(ninjas_pelea.keys())
+    if len(participantes) < 2:
+        print("No hay suficientes ninjas para iniciar el torneo.")
+        return
+     
+    rondas=["Dieciseisavos", "Octavos", "Cuartos", "Semifinales", "Final"]
 
-campeon=participantes[0]
-print(f"🥷🏆 \nEl campeón del torneo es: {campeon}")
-print(f"\n Habilidades del: {campeon}")
-mostrar_habilidades(ninjas_pelea[campeon])
+
+    for nombre_ronda in rondas:
+        if len(participantes) ==1:
+            break
+        participantes = ronda(nombre_ronda, participantes, ninjas_pelea)
+
+    if participantes:
+        campeon=participantes[0]
+        print(f"🥷🏆 \nEl campeón del torneo es: {campeon}")
+        print(f"\n Habilidades del: {campeon}")
+        mostrar_habilidades(ninjas_pelea[campeon])
 
 #Bucle 
 while True:
@@ -426,7 +439,7 @@ while True:
             elif opciones == 3:
                 ver_arbol_jugador()
             elif opciones == 5:
-                ronda()
+                simular_torneo_jugador()
             elif opciones == 0:
                 print("Saliendo del juego.")
                 break
