@@ -16,6 +16,7 @@ class NodoHabilidad:
         self.puntos = puntos
         self.izq = None
         self.der = None
+
 def crear_arbol_personalizado(nombre_ninja):
     print(f"\n--- Asignar habilidades a {nombre_ninja} ---")
     habilidades = []
@@ -29,6 +30,7 @@ def crear_arbol_personalizado(nombre_ninja):
     raiz.izq.izq = NodoHabilidad(habilidades[3], random.randint(6, 10))
 
     return raiz
+
 def mostrar_habilidades(nodo, nivel=0):
     if nodo:
         print("  " * nivel + f"{nodo.nombre}")
@@ -185,6 +187,26 @@ def crer_arbol_para_ninja():
     arboles_ninja[nombre] = arbol
     print(f"Arbol de habilidades creado y guardado para {nombre}.")
 
+def guardar_habilidades_ninja(habilidades):
+    try:
+        with open(habilidades, "w", encoding="utf-8") as f:
+            for nombre, arbol in arboles_ninja.items():
+                f.write(f"{nombre}\n")
+                mostrar_habilidades(arbol, nivel=1)
+        print("Habilidades guardadas correctamente.")
+    except Exception as e:
+        print(f"Error al guardar habilidades: {e}")
+
+def guardar_cambios_en_archivo_original():
+    try:
+        with open(ninjas_archivo, "w", encoding="utf-8") as f:
+            for nombre, arbol in arboles_ninja.items():
+                f.write(f"{nombre}\n")
+                mostrar_habilidades(arbol, nivel=1)
+        print("Cambios guardados correctamente.")
+    except Exception as e:
+        print(f"Error al guardar cambios: {e}")
+        
 #ROL JUGADOR
 def menu_jugador():
     print("-----MENU JUGADOR-----")
@@ -219,7 +241,7 @@ def verificar_credencial(usuario,contraseña,lista_usuarios):
 def agregar_usuario(nuevos_usuarios):
     nombre = input("Nombre Completo: ")
     while True:
-        identificacion = input("Identificacion: ")
+        identificacion = int(input("Identificacion: "))
         if len(identificacion) > 10:
             print("Identificacion no valida: ")
         else:
@@ -299,6 +321,8 @@ def ver_arbol_jugador():
             print("No valido. Intenta de nuevo")
     except:
         print("Entrada no válida.")
+
+
 
     
 #Bucle 
