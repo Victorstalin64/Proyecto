@@ -3,7 +3,6 @@ from io import open #Abrir archivos compatibles con python
 import os  #Verificacion de archivos
 import re  #Validar patrones de texto
 import random #Numeros aleatorios 
-from collections import deque
 
 archivo = "usuarios.txt"
 ninjas_archivo = "ninjas.txt"
@@ -252,7 +251,7 @@ def verificar_credencial(usuario,contraseña,lista_usuarios):
 def agregar_usuario(nuevos_usuarios):
     nombre = input("Nombre Completo: ")
     while True:
-        identificacion = int(input("Identificacion: "))
+        identificacion = input("Identificacion: ")
         if len(identificacion) > 10:
             print("Identificacion no valida: ")
         else:
@@ -423,8 +422,8 @@ def simulacion_de_combate():
     puntos_ninja1 = primer_ninja_seleccionado['Puntos'] + habilidades_con_ninja(arbol_ninja1) + random.randint(0,5)
     puntos_ninja2 = segundo_ninja_seleccionado['Puntos'] + habilidades_con_ninja(arbol_ninja2) + random.randint(0,5)
 
-    print(f"{ninja['Nombre']} ➡️ Total: {puntos_ninja1} puntos")
-    print(f"{ninja['Nombre']} ➡️ Total: {puntos_ninja2} puntos")
+    print(f"{primer_ninja_seleccionado['Nombre']} ➡️ Total: {puntos_ninja1} puntos")
+    print(f"{segundo_ninja_seleccionado['Nombre']} ➡️ Total: {puntos_ninja2} puntos")
 
     if puntos_ninja1 > puntos_ninja2:
         ganador = primer_ninja_seleccionado['Nombre']
@@ -435,10 +434,38 @@ def simulacion_de_combate():
     
     print(f"🏆 Resultado: {ganador} de la batalla")
 
-    with open("combates_1_vs_1.txt" ,"a" , encoding= "UTF-8") as f:
+    with open("combates.txt" ,"a" , encoding= "UTF-8") as f:
         f.write(f"{primer_ninja_seleccionado['Nombre']} VS {segundo_ninja_seleccionado['Nombre']} ➡️ Ganador: {ganador}\n")
         print("✅Resultado de los combates 1 vs 1 guardado correctamente.")
 
+def ranking_consulta():
+    if not os.path.exists("combates.txt"):
+        print("No existen combates registrados")
+        return
+    victorias = {}
+    with open("combates.txt","r",encoding="UTF-8") as f:
+        for lineas in f:
+            if "Ganador" in lineas:
+                ganador = lineas.strip().split("Ganador:")[-1].strip()
+                if ganador in victorias:
+                    victorias[ganador] += 1
+                else:
+                    victorias[ganador] = 1 
+    if not victorias:
+        print("No existe ninguna victoria registrada actualmente")
+        return
+    rank = sorted(victorias.items(),key=lambda n:n[1],reverse=True)
+
+    print("-"*10 +"📈Ranking Actualizado por Victorias"+"-"*10)
+    print(f"{'Pos':<5}{'Ninja':<20}{'victorias'}")
+
+    for i,(ninja,vic) in enumerate(rank,1):
+        print(f"{i:<5}{ninja:<20}{vic}")
+
+    with open("ranking.txt", "w",encoding="UTF-8") as f:
+        for i, (ninja,vic) in enumerate(rank,1):
+            f.write(f"{i}.{ninja} | {vic} victorias \n")
+    print("\nRanking guardado exitosamente")
 #Bucle 
 while True:
     print("--------MENU PRINCIPAL---------")
@@ -495,6 +522,8 @@ while True:
                 simulacion_de_combate()
             elif opciones == 5:
                 simular_torneo_jugador()
+            elif opciones == 6:
+                ranking_consulta()
             elif opciones == 0:
                 print("Saliendo del juego.")
                 break
