@@ -1,3 +1,4 @@
+from collections import deque #Permite insertar y eliminar elementoos al principio/fin de una lista
 from io import open #Abrir archivos compatibles con python
 import os  #Verificacion de archivos
 import re  #Validar patrones de texto
@@ -166,7 +167,7 @@ def ninja_a_actualizar(lista_de_ninjas):
             print("🥷✅El ninja ha sido actuaizado correctamente")
             return
     print("🥷❎Ninja no encontrado")
-
+    
 def eliminar_ninja(lista_de_ninjas):
     nombre_eliminar = input("Ingrese el nombre del ninja a eliminar: ").strip()
     for ninja in lista_de_ninjas:
@@ -175,8 +176,7 @@ def eliminar_ninja(lista_de_ninjas):
             print(f"🚯El ninja '{nombre_eliminar}' eliminado correctamente.")
             return
     print("🥷❎Ninja no encontrado. Error al eliminar ninja")
-    
-def crer_arbol_para_ninja():
+def crear_arbol_para_ninja():
     nombre = input("Nombre del ninja para asignar habilidades: ").strip()
     if nombre == "":
         print("Nombre inválido.")
@@ -191,8 +191,11 @@ def menu_jugador():
     print("1. Registrarse")
     print("2. Iniciar sesión")
     print("3. Ver arbol de habilidades ninja")
-    print("4. Simular combate")
-    print("5. Salir")
+    print("4. Simular combate 1 vs 1")
+    print("5. Simular torneo completo")
+    print("6. Consultar el ranking actualizado")
+    print("7. Guardar progreso ")
+    print("0. Salir")
 
 def validar_correo(correo):
     patron = r"^[a-zA-Z]+\.[a-zA-Z]+@gmail\.com$"
@@ -300,7 +303,59 @@ def ver_arbol_jugador():
     except:
         print("Entrada no válida.")
 
+def habilidades_con_ninja(nodo):
+    if nodo is None:
+        return 0
+    return nodo.puntos + habilidades_con_ninja(nodo.izq) + habilidades_con_ninja(nodo.der)
+
+def simulacion_de_combate():
+    ninjas = leer_ninjas()
+    if len(ninjas) < 2:
+        print("No hay suficientes ninjas para simular un combate")
+        return
+    print("-"*10 +"Ninjas Disponibles" + "-"*10)
+    for n,ninja in enumerate(ninjas, 1):
+        print(f"{n}.{ninja['Nombre']} | Puntos: {ninja['Puntos']} | Estilo: {ninja['Estilo']} | Rango: {ninja['Rango']}")
+    while True:
+        try:
+            entrada1 = int(input("Seleccione el primer ninja: ")) - 1
+            entrada2 = int(input("Seleccione el segundo ninja: ")) - 1
+            if entrada1 == entrada2 or entrada1 < 0 or entrada2 < 0 or entrada1 >= len(ninjas) or entrada2 >=len(ninjas):
+                print("Error. Seleccion invalida ingrese ninjas validos")
+                continue
+            break
+        except ValueError:
+            print("Entrada invalida. Solo ingresar un numero")
+            return
+    primer_ninja_seleccionado = ninjas[entrada1]
+    segundo_ninja_seleccionado = ninjas[entrada2]
+    print(f"\n🤼 Combate: {primer_ninja_seleccionado['Nombre']}, VS {segundo_ninja_seleccionado['Nombre']}")
+    arbol_ninja1 = arboles_ninja.get(primer_ninja_seleccionado['Nombre'])
+    arbol_ninja2 = arboles_ninja.get(segundo_ninja_seleccionado['Nombre'])
+    if not arbol_ninja1 or not arbol_ninja2:
+        print("❎Error. Algun ninja no tiene designado un arbol de habilidades")
+        return
     
+    puntos_ninja1 = primer_ninja_seleccionado['Puntos'] + habilidades_con_ninja(arbol_ninja1) + random.randint(0,5)
+    puntos_ninja2 = segundo_ninja_seleccionado['Puntos'] + habilidades_con_ninja(arbol_ninja2) + random.randint(0,5)
+
+    print(f"{ninja['Nombre']} ➡️ Total: {puntos_ninja1} puntos")
+    print(f"{ninja['Nombre']} ➡️ Total: {puntos_ninja2} puntos")
+
+    if puntos_ninja1 > puntos_ninja2:
+        ganador = primer_ninja_seleccionado['Nombre']
+    elif puntos_ninja2 > puntos_ninja1:
+        ganador = segundo_ninja_seleccionado['Nombre']
+    else:
+        ganador = random.choice([primer_ninja_seleccionado['Nombre'], segundo_ninja_seleccionado['Nombre']])
+    
+    print(f"🏆 Resultado: {ganador} de la batalla")
+
+    with open("combates_1_vs_1.txt" ,"a" , encoding= "UTF-8") as f:
+        f.write(f"{primer_ninja_seleccionado['Nombre']} VS {segundo_ninja_seleccionado['Nombre']} ➡️ Ganador: {ganador}\n")
+        print("✅Resultado de los combates 1 vs 1 guardado correctamente.")
+
+
 #Bucle 
 while True:
     print("--------MENU PRINCIPAL---------")
@@ -332,7 +387,7 @@ while True:
                 eliminar_ninja(ninjas_lista)
                 guardar_ninjas(ninjas_lista)
             elif admin_opcion == 6:
-                crer_arbol_para_ninja()
+                crear_arbol_para_ninja()
             elif admin_opcion == 0:
                 print("Saliendo del administrador.")
                 break
@@ -350,6 +405,8 @@ while True:
                 usuario_actual = iniciar_sesion(lis)
             elif opciones == 3:
                 ver_arbol_jugador()
+            elif opciones == 4:
+                simulacion_de_combate()
             elif opciones == 5:
                 print("Saliendo del juego.")
                 break
