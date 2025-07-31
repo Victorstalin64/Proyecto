@@ -1,0 +1,2 @@
+Naruto ,16,Ninjutsu,Genin
+Sasuke ,14,Dojutsu,Chunin

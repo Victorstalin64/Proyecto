@@ -143,8 +143,8 @@ def buscar_ninja(lista_ninjas):
     real_campo = clave_directa[buscar_campo]
 
     clave_a_buscar = input(f"Ingrese el {buscar_campo} exacto a buscar: ").strip().lower()
-    lista_ninjas.sort(key=lambda n:n[real_campo].lower())
-    valores = [ninja[real_campo].lower() for ninja in lista_ninjas]
+    lista_ninjas.sort(key=lambda n:n[real_campo].lower().strip())
+    valores = [ninja[real_campo].lower().strip() for ninja in lista_ninjas]
 
     #Busqueda binaria
     izq = 0
