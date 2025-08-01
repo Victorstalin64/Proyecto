@@ -11,6 +11,20 @@ habilidades = "habilidades_ninja.txt"
 progreso = "combates_usuario_email.txt"
 usuarios = []
 arboles_ninja = {}
+ninjas = []
+ninjas_pelea = {}
+
+def inicializar_datos():
+    global ninjas, ninjas_pelea, arboles_ninja  # Agregar arboles_ninja
+    ninjas = leer_ninjas()
+    cargar_habilidades_ninja(habilidades)
+    ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas}
+
+def actualizar_ninjas_pelea():
+    global ninjas_pelea
+    ninjas = leer_ninjas()
+    cargar_habilidades_ninja(habilidades)
+    ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas if ninja['Nombre'] in arboles_ninja}
 
 #crear arbol de habilidades de cada ninja
 class NodoHabilidad:
@@ -36,9 +50,7 @@ def crear_arbol_personalizado(nombre_ninja):
     raiz.izq = NodoHabilidad(habilidades[1], random.randint(5, 10))
     raiz.der = NodoHabilidad(habilidades[2], random.randint(5, 10))
     raiz.izq.izq = NodoHabilidad(habilidades[3], random.randint(5, 10))
-
     return raiz
-ninjas =[]
 
 
 def mostrar_habilidades(nodo, nivel=0):
@@ -233,13 +245,19 @@ def reconstruir_arbol(lineas):
 
 def guardar_cambios_en_archivo_original():
     try:
-        with open(ninjas_archivo, "w", encoding="utf-8") as f:
+        # Primero guardar los datos básicos de los ninjas
+        guardar_ninjas(ninjas)
+        
+        # Luego guardar las habilidades en su archivo correspondiente
+        with open(habilidades, "w", encoding="utf-8") as f:
             for nombre, arbol in arboles_ninja.items():
                 f.write(f"{nombre}\n")
-                mostrar_habilidades(arbol, nivel=1)
-        print("Cambios guardados correctamente.")
+                # Guardar el árbol de forma estructurada
+                guardar_nodo(arbol, f)
+        
+        print("✅ Todos los cambios guardados correctamente (ninjas y habilidades).")
     except Exception as e:
-        print(f"Error al guardar cambios: {e}")
+        print(f"❌ Error al guardar cambios: {e}")
 
 #ROL JUGADOR
 def menu_jugador():
@@ -364,7 +382,7 @@ def ver_arbol_jugador():
     except:
         print("Entrada no válida.")
 
-ninjas_pelea = {nombre: crear_arbol_personalizado(nombre) for nombre in ninjas} 
+ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas}
 #simular rondas del torneo
 def ronda(nombre_ronda,participantes, ninjas_pelea, usuario_actual=None):
     print(f"{nombre_ronda.upper()} {len(participantes)} ninjas")
@@ -393,30 +411,55 @@ def ronda(nombre_ronda,participantes, ninjas_pelea, usuario_actual=None):
     return siguiente_ronda
 
 def simular_torneo_jugador(usuario_actual=None):
-    print("Bienvenido al torneo de ninjas")
-
-    if not arboles_ninja:
-        print("No hay árboles de habilidades suficientes para un torneo.")
-        return
+    actualizar_ninjas_pelea()
     
-    participantes = list(ninjas_pelea.keys())
-    if len(participantes) < 2:
-        print("No hay suficientes ninjas para iniciar el torneo.")
+    if len(ninjas_pelea) < 2:
+        print("❌ Necesitas mínimo 2 ninjas con habilidades para el torneo")
         return
-     
-    rondas=["Dieciseisavos", "Octavos", "Cuartos", "Semifinales", "Final"]
 
+    participantes = list(ninjas_pelea.keys())
+    random.shuffle(participantes)  # Aleatoriza el orden
+    
+    print("\n🔥 COMIENZA EL TORNEO 🔥")
+    
+    # Sistema automático de rondas según participantes
+    if len(participantes) >= 8:
+        rondas = ["Octavos de final", "Cuartos de final", "Semifinal", "Final"]
+    elif len(participantes) >= 4:
+        rondas = ["Cuartos de final", "Semifinal", "Final"]
+    else:
+        rondas = ["Final"]
 
-    for nombre_ronda in rondas:
-        if len(participantes) ==1:
-            break
-        participantes = ronda(nombre_ronda, participantes, ninjas_pelea, usuario_actual)
-
-    if participantes:
-        campeon=participantes[0]
-        print(f"🥷🏆 \nEl campeón del torneo es: {campeon}")
-        print(f"\n Habilidades del: {campeon}")
-        mostrar_habilidades(ninjas_pelea[campeon])
+    for ronda in rondas:
+        print(f"\n=== {ronda.upper()} ===")
+        ganadores_ronda = []
+        
+        for i in range(0, len(participantes), 2):
+            if i+1 >= len(participantes):  # Caso impar
+                ganadores_ronda.append(participantes[i])
+                continue
+                
+            ninja1 = participantes[i]
+            ninja2 = participantes[i+1]
+            
+            # Simular combate
+            puntos1 = sumar_habilidades(ninjas_pelea[ninja1])
+            puntos2 = sumar_habilidades(ninjas_pelea[ninja2])
+            
+            print(f"\n• {ninja1} vs {ninja2}")
+            print(f"  {ninja1}: {puntos1} pts | {ninja2}: {puntos2} pts")
+            
+            ganador = ninja1 if puntos1 > puntos2 else ninja2 if puntos2 > puntos1 else random.choice([ninja1, ninja2])
+            print(f"  ⚡GANADOR: {ganador}")
+            ganadores_ronda.append(ganador)
+            
+            if usuario_actual:
+                guardar_combate_usuario(usuario_actual, f"Torneo ({ronda}): {ninja1} vs {ninja2} | Ganador: {ganador}")
+        
+        participantes = ganadores_ronda
+    
+    print(f"\n🎉 CAMPEÓN DEL TORNEO: {participantes[0]} 🎉")
+    mostrar_habilidades(ninjas_pelea[participantes[0]])
 
 def habilidades_con_ninja(nodo):
     if nodo is None:
@@ -424,55 +467,56 @@ def habilidades_con_ninja(nodo):
     return nodo.puntos + habilidades_con_ninja(nodo.izq) + habilidades_con_ninja(nodo.der)
 
 def simulacion_de_combate(usuario_actual=None):
-    ninjas = leer_ninjas()
-    if len(ninjas) < 2:
-        print("No hay suficientes ninjas para simular un combate")
+    actualizar_ninjas_pelea()  # Actualiza los datos primero
+    
+    if not ninjas_pelea or len(ninjas_pelea) < 2:
+        print("❌ Necesitas al menos 2 ninjas con habilidades asignadas")
         return
-    print("-"*10 +"Ninjas Disponibles" + "-"*10)
-    for n,ninja in enumerate(ninjas, 1):
-        print(f"{n}.{ninja['Nombre']} | Puntos: {ninja['Puntos']} | Estilo: {ninja['Estilo']} | Rango: {ninja['Rango']}")
-    while True:
-        try:
-            entrada1 = int(input("Seleccione el primer ninja: ")) - 1
-            entrada2 = int(input("Seleccione el segundo ninja: ")) - 1
-            if entrada1 == entrada2 or entrada1 < 0 or entrada2 < 0 or entrada1 >= len(ninjas) or entrada2 >=len(ninjas):
-                print("Error. Seleccion invalida ingrese ninjas validos")
-                continue
-            break
-        except ValueError:
-            print("Entrada invalida. Solo ingresar un numero")
+
+    # Muestra solo ninjas con habilidades
+    print("\n=== NINJAS DISPONIBLES ===")
+    ninjas_con_habilidades = list(ninjas_pelea.keys())
+    for idx, nombre in enumerate(ninjas_con_habilidades, 1):
+        print(f"{idx}. {nombre}")
+
+    try:
+        # Selección de ninjas
+        eleccion1 = int(input("\nSelecciona al primer ninja: ")) - 1
+        eleccion2 = int(input("Selecciona al segundo ninja: ")) - 1
+        
+        if eleccion1 == eleccion2:
+            print("⚠️ Debes seleccionar ninjas diferentes")
             return
-    primer_ninja_seleccionado = ninjas[entrada1]
-    segundo_ninja_seleccionado = ninjas[entrada2]
-    print(f"\n🤼 Combate: {primer_ninja_seleccionado['Nombre']}, VS {segundo_ninja_seleccionado['Nombre']}")
-    arbol_ninja1 = arboles_ninja.get(primer_ninja_seleccionado['Nombre'])
-    arbol_ninja2 = arboles_ninja.get(segundo_ninja_seleccionado['Nombre'])
-    if not arbol_ninja1 or not arbol_ninja2:
-        print("❎Error. Algun ninja no tiene designado un arbol de habilidades")
-        return
-    
-    puntos_ninja1 = primer_ninja_seleccionado['Puntos'] + habilidades_con_ninja(arbol_ninja1) + random.randint(0,5)
-    puntos_ninja2 = segundo_ninja_seleccionado['Puntos'] + habilidades_con_ninja(arbol_ninja2) + random.randint(0,5)
-
-    print(f"{primer_ninja_seleccionado['Nombre']} ➡️ Total: {puntos_ninja1} puntos")
-    print(f"{segundo_ninja_seleccionado['Nombre']} ➡️ Total: {puntos_ninja2} puntos")
-
-    if puntos_ninja1 > puntos_ninja2:
-        ganador = primer_ninja_seleccionado['Nombre']
-    elif puntos_ninja2 > puntos_ninja1:
-        ganador = segundo_ninja_seleccionado['Nombre']
-    else:
-        ganador = random.choice([primer_ninja_seleccionado['Nombre'], segundo_ninja_seleccionado['Nombre']])
-    
-    print(f"🏆 Resultado: {ganador} de la batalla")
-
-    with open("combates.txt" ,"a" , encoding= "UTF-8") as f:
-        f.write(f"{primer_ninja_seleccionado['Nombre']} VS {segundo_ninja_seleccionado['Nombre']} ➡️ Ganador: {ganador}\n")
-        print("✅Resultado de los combates 1 vs 1 guardado correctamente.")
+            
+        nombre_ninja1 = ninjas_con_habilidades[eleccion1]
+        nombre_ninja2 = ninjas_con_habilidades[eleccion2]
+        
+        # Obtener datos completos
+        todos_ninjas = leer_ninjas()
+        ninja1 = next(n for n in todos_ninjas if n['Nombre'] == nombre_ninja1)
+        ninja2 = next(n for n in todos_ninjas if n['Nombre'] == nombre_ninja2)
+        
+        # Calcular puntos
+        puntos1 = ninja1['Puntos'] + sumar_habilidades(ninjas_pelea[nombre_ninja1])
+        puntos2 = ninja2['Puntos'] + sumar_habilidades(ninjas_pelea[nombre_ninja2])
+        
+        # Resultado
+        print(f"\n⚔️ COMBATE: {nombre_ninja1} vs {nombre_ninja2}")
+        print(f"• {nombre_ninja1}: {puntos1} puntos")
+        print(f"• {nombre_ninja2}: {puntos2} puntos")
+        
+        ganador = nombre_ninja1 if puntos1 > puntos2 else nombre_ninja2 if puntos2 > puntos1 else random.choice([nombre_ninja1, nombre_ninja2])
+        print(f"\n🏆 GANADOR: {ganador}!")
+        
+        # Guardar registro
+        with open("combates.txt", "a", encoding="utf-8") as f:
+            f.write(f"{nombre_ninja1} VS {nombre_ninja2} | Ganador: {ganador}\n")
+            
         if usuario_actual:
-            guardar_combate_usuario(
-                usuario_actual,
-                f"Combate: {primer_ninja_seleccionado['Nombre']} vs {segundo_ninja_seleccionado['Nombre']} | Ganador: {ganador}")
+            guardar_combate_usuario(usuario_actual, f"Combate: {nombre_ninja1} vs {nombre_ninja2} | Ganador: {ganador}")
+            
+    except (ValueError, IndexError):
+        print("❌ Error: Selección inválida")
 
 def ranking_consulta():
     if not os.path.exists("combates.txt"):
@@ -525,6 +569,7 @@ def mostrar_historial_usuario(email):
             print(linea.strip())
 
 #Bucle 
+inicializar_datos()
 while True:
     print("--------MENU PRINCIPAL---------")
     print("1. Rol Administrador")
@@ -570,6 +615,11 @@ while True:
                     print("Entrada no valida. Ingrese un numero")
         elif opcion_principal == 2:
             usuario_actual = None
+            inicializar_datos()
+            ninjas = leer_ninjas()
+            cargar_habilidades_ninja(habilidades)
+            ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas}
+
             while True:
                 menu_jugador()
                 try:
