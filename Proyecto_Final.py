@@ -21,7 +21,7 @@ def inicializar_datos():
     ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas}
 
 def actualizar_ninjas_pelea():
-    global ninjas_pelea
+    global ninjas_pelea, ninjas, arboles_ninja
     ninjas = leer_ninjas()
     cargar_habilidades_ninja(habilidades)
     ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas if ninja['Nombre'] in arboles_ninja}
@@ -616,10 +616,6 @@ while True:
         elif opcion_principal == 2:
             usuario_actual = None
             inicializar_datos()
-            ninjas = leer_ninjas()
-            cargar_habilidades_ninja(habilidades)
-            ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas}
-
             while True:
                 menu_jugador()
                 try:
@@ -635,8 +631,10 @@ while True:
                             if opcion_usuario == 1:
                                 ver_arbol_jugador()
                             elif opcion_usuario == 2:
+                                actualizar_ninjas_pelea() 
                                 simulacion_de_combate(usuario_actual)
                             elif opcion_usuario == 3:
+                                actualizar_ninjas_pelea()
                                 simular_torneo_jugador()
                             elif opcion_usuario == 4:
                                 ranking_consulta()
