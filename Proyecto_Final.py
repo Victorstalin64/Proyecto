@@ -15,7 +15,7 @@ ninjas = []
 ninjas_pelea = {}
 
 def inicializar_datos():
-    global ninjas, ninjas_pelea, arboles_ninja  # Agregar arboles_ninja
+    global ninjas, ninjas_pelea, arboles_ninja  
     ninjas = leer_ninjas()
     cargar_habilidades_ninja(habilidades)
     ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas}
@@ -24,7 +24,17 @@ def actualizar_ninjas_pelea():
     global ninjas_pelea, ninjas, arboles_ninja
     ninjas = leer_ninjas()
     cargar_habilidades_ninja(habilidades)
-    ninjas_pelea = {ninja['Nombre']: arboles_ninja.get(ninja['Nombre']) for ninja in ninjas if ninja['Nombre'] in arboles_ninja}
+    
+    ninjas_pelea = {}
+    for ninja in ninjas:
+        if ninja['Nombre'] in arboles_ninja and arboles_ninja[ninja['Nombre']] is not None:
+            if sumar_habilidades(arboles_ninja[ninja['Nombre']]) > 0:  # Verificar que tenga puntos
+                ninjas_pelea[ninja['Nombre']] = arboles_ninja[ninja['Nombre']]
+    
+    if not ninjas_pelea:
+        print("¡Advertencia! No hay ninjas con habilidades válidas")
+    return len(ninjas_pelea) >= 2 
+
 
 #crear arbol de habilidades de cada ninja
 class NodoHabilidad:
@@ -467,13 +477,12 @@ def habilidades_con_ninja(nodo):
     return nodo.puntos + habilidades_con_ninja(nodo.izq) + habilidades_con_ninja(nodo.der)
 
 def simulacion_de_combate(usuario_actual=None):
-    actualizar_ninjas_pelea()  # Actualiza los datos primero
-    
-    if not ninjas_pelea or len(ninjas_pelea) < 2:
-        print("❌ Necesitas al menos 2 ninjas con habilidades asignadas")
+    if not actualizar_ninjas_pelea():
+        print("❌ No hay ninjas con habilidades asignadas")
         return
-
-    # Muestra solo ninjas con habilidades
+    
+    actualizar_ninjas_pelea()  
+    
     print("\n=== NINJAS DISPONIBLES ===")
     ninjas_con_habilidades = list(ninjas_pelea.keys())
     for idx, nombre in enumerate(ninjas_con_habilidades, 1):
@@ -625,6 +634,8 @@ while True:
                     elif opciones == 2:
                         lis = usuarios_registrados()
                         usuario_actual = iniciar_sesion(lis)
+                        if usuario_actual:
+                            actualizar_ninjas_pelea()  # Actualiza los ninjas al iniciar sesión
                         while True:
                             menu_opciones_jugador()
                             opcion_usuario = int(input("Ingrese una opcion: "))
