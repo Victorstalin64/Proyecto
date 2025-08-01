@@ -109,23 +109,23 @@ Amaterasu,10
 None
 None
 Neji
-Golpes de precisión al sistema interno,6
-Rotación de palma celestial,7
-Predicción de movimientos enemigos,7
+Suiton: Daikōdan no Jutsu,10
+Suiton: Bakusui Shōha,5
+Suiton: Suikōdan no Jutsu,10
 None
 None
 None
-Defensa de trigrama,7
+- Fusión con Samehada:,8
 None
 None
 Itachi
-- Ilusiones visuales avanzadas,8
-Tsukuyomi,6
-Susanoo defensivo y ofensivo,6
+Amaterasu,5
+Tsukuyomi,5
+Katon,9
 None
 None
 None
-- Amaterasu,8
+Susanoo,5
 None
 None
 Lee
@@ -136,5 +136,25 @@ None
 None
 None
 Técnica del loto primario,8
+None
+None
+Entierro del Desierto
+dfnf,10
+djdj,9
+dhdjs,8
+None
+None
+None
+dhd,5
+None
+None
+Amaterasu
+- Tsukuyomi,10
+,9
+,6
+None
+None
+None
+,9
 None
 None

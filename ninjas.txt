@@ -1,14 +1,2 @@
-Naruto
-Kiba
-Shikamaru
-Temari
-Sai
-Gaara
-Kisame
-Tente
-Kakashi
-Hinata
-Sasuke
-Neji
-Itachi
-Lee
+Naruto,16,Ninjutsu,Genin
+Gaara,14,Arena,Kazekage
