@@ -1,3 +1,10 @@
 Naruto
-Sasuke
-Kakashi
+Ransengan,10
+Kage Bunshin,7
+Kurama Modo,6
+None
+None
+None
+Sennin Mode,7
+None
+None

@@ -143,8 +143,8 @@ def buscar_ninja(lista_ninjas):
     real_campo = clave_directa[buscar_campo]
 
     clave_a_buscar = input(f"Ingrese el {buscar_campo} exacto a buscar: ").strip().lower()
-    lista_ninjas.sort(key=lambda n:n[real_campo].lower().strip())
-    valores = [ninja[real_campo].lower().strip() for ninja in lista_ninjas]
+    lista_ninjas.sort(key=lambda n:n[real_campo].lower())
+    valores = [ninja[real_campo].lower() for ninja in lista_ninjas]
 
     #Busqueda binaria
     izq = 0
@@ -194,15 +194,40 @@ def crear_arbol_para_ninja():
     arboles_ninja[nombre] = arbol
     print(f"Arbol de habilidades creado y guardado para {nombre}.")
 
-def guardar_habilidades_ninja(habilidades):
-    try:
-        with open(habilidades, "w", encoding="utf-8") as f:
-            for nombre, arbol in arboles_ninja.items():
-                f.write(f"{nombre}\n")
-                mostrar_habilidades(arbol, nivel=1)
-        print("Habilidades guardadas correctamente.")
-    except Exception as e:
-        print(f"Error al guardar habilidades: {e}")
+def guardar_habilidades_ninja(archivo):
+    with open(archivo, "w", encoding="utf-8") as f:
+        for nombre, arbol in arboles_ninja.items():
+            f.write(f"{nombre}\n")
+            guardar_nodo(arbol, f)
+
+def guardar_nodo(nodo, f, nivel=0):
+    if nodo is None:
+        f.write("None\n")
+        return
+    f.write(f"{nodo.nombre},{nodo.puntos}\n")
+    guardar_nodo(nodo.izq, f, nivel+1)
+    guardar_nodo(nodo.der, f, nivel+1)
+
+def cargar_habilidades_ninja(archivo):
+    if not os.path.exists(archivo):
+        return
+    with open(archivo, "r", encoding="utf-8") as f:
+        lineas = deque(f.read().splitlines())
+    while lineas:
+        nombre = lineas.popleft()
+        arboles_ninja[nombre] = reconstruir_arbol(lineas)
+
+def reconstruir_arbol(lineas):
+    if not lineas:
+        return None
+    linea = lineas.popleft()
+    if linea == "None":
+        return None
+    nombre, puntos = linea.split(",")
+    nodo = NodoHabilidad(nombre, int(puntos))
+    nodo.izq = reconstruir_arbol(lineas)
+    nodo.der = reconstruir_arbol(lineas)
+    return nodo
 
 def guardar_cambios_en_archivo_original():
     try:
@@ -219,11 +244,15 @@ def menu_jugador():
     print("-----MENU JUGADOR-----")
     print("1. Registrarse")
     print("2. Iniciar sesión")
-    print("3. Ver arbol de habilidades ninja")
-    print("4. Simular combate 1 vs 1")
-    print("5. Simular rondas del torneo")
-    print("6. Consultar ranking")
-    print("Guardar progreso")
+    print("0. Salir")
+
+def menu_opciones_jugador():
+    print("-----MENU OPCIONES JUGADOR-----")
+    print("1. Ver arbol de habilidades ninja")
+    print("2. Simular combate 1 vs 1")
+    print("3. Simular rondas del torneo")
+    print("4. Consultar ranking")
+    print("5. Guardar progreso")
     print("0. Salir")
 
 def validar_correo(correo):
@@ -471,66 +500,87 @@ while True:
     print("--------MENU PRINCIPAL---------")
     print("1. Rol Administrador")
     print("2. Rol Jugador")
-    print("3. Salir")
-    opcion_principal = int(input("Ingrese una opcion: "))
-    if opcion_principal == 1:
-        login_administrador()
-        while True:
-            menu_administrador()
-            admin_opcion = int(input("Ingrese una opcion: "))
-            if admin_opcion == 1:
-                listas_de_ninjas = leer_ninjas()
-                agregar_ninja(listas_de_ninjas)
-                guardar_ninjas(listas_de_ninjas)
-            elif admin_opcion == 2:
-                ninjas_lista = leer_ninjas()
-                listar_ninjas(ninjas_lista)
-            elif admin_opcion == 3:
-                ninjas_lista = leer_ninjas()
-                buscar_ninja(ninjas_lista)
-            elif admin_opcion == 4:
-                ninjas_lista = leer_ninjas()
-                ninja_a_actualizar(ninjas_lista)
-                guardar_ninjas(ninjas_lista)
-            elif admin_opcion == 5:
-                ninjas_lista = leer_ninjas()
-                eliminar_ninja(ninjas_lista)
-                guardar_ninjas(ninjas_lista)
-            elif admin_opcion == 6:
-                crear_arbol_para_ninja()
-                guardar_habilidades_ninja(habilidades)
-            elif admin_opcion == 7:
-                guardar_cambios_en_archivo_original()
-            elif admin_opcion == 0:
-                print("Saliendo del administrador.")
-                break
-            else: 
-                print("Opcion ingresada no valida")
-    elif opcion_principal == 2:
-        usuario_actual = None
-        while True:
-            menu_jugador()
-            opciones = int(input("Ingrese una opcion: "))
-            if opciones == 1:
-                agregar_usuario(usuarios)
-            elif opciones == 2:
-                lis = usuarios_registrados()
-                usuario_actual = iniciar_sesion(lis)
-            elif opciones == 3:
-                ver_arbol_jugador()
-            elif opciones == 4:
-                simulacion_de_combate()
-            elif opciones == 5:
-                simular_torneo_jugador()
-            elif opciones == 6:
-                ranking_consulta()
-            elif opciones == 0:
-                print("Saliendo del juego.")
-                break
-            else:
-                print("Opcion no valida")
-    elif opcion_principal == 3:
-        print("Gracias por usar el sistema. Saliendo.....")
-        break
-    else: 
-        print("Opcion no valida. Intentelo nuevamente")
+    print("0. Salir")
+    try:
+        opcion_principal = int(input("Ingrese una opcion: "))
+        if opcion_principal == 1:
+            login_administrador()
+            while True:
+                menu_administrador()
+                try:
+                    admin_opcion = int(input("Ingrese una opcion: "))
+                    if admin_opcion == 1:
+                        listas_de_ninjas = leer_ninjas()
+                        agregar_ninja(listas_de_ninjas)
+                        guardar_ninjas(listas_de_ninjas)
+                    elif admin_opcion == 2:
+                        ninjas_lista = leer_ninjas()
+                        listar_ninjas(ninjas_lista)
+                    elif admin_opcion == 3:
+                        ninjas_lista = leer_ninjas()
+                        buscar_ninja(ninjas_lista)
+                    elif admin_opcion == 4:
+                        ninjas_lista = leer_ninjas()
+                        ninja_a_actualizar(ninjas_lista)
+                        guardar_ninjas(ninjas_lista)
+                    elif admin_opcion == 5:
+                        ninjas_lista = leer_ninjas()
+                        eliminar_ninja(ninjas_lista)
+                        guardar_ninjas(ninjas_lista)
+                    elif admin_opcion == 6:
+                        crear_arbol_para_ninja()
+                        guardar_habilidades_ninja(habilidades)
+                    elif admin_opcion == 7:
+                        guardar_cambios_en_archivo_original()
+                    elif admin_opcion == 0:
+                        print("Saliendo del administrador.")
+                        break
+                    else: 
+                        print("Opcion ingresada no valida")
+                except ValueError:
+                    print("Entrada no valida. Ingrese un numero")
+        elif opcion_principal == 2:
+            usuario_actual = None
+            while True:
+                menu_jugador()
+                try:
+                    opciones = int(input("Ingrese una opcion: "))
+                    if opciones == 1:
+                        agregar_usuario(usuarios)
+                    elif opciones == 2:
+                        lis = usuarios_registrados()
+                        usuario_actual = iniciar_sesion(lis)
+                        while True:
+                            menu_opciones_jugador()
+                            opcion_usuario = int(input("Ingrese una opcion: "))
+                            if opcion_usuario == 1:
+                                ver_arbol_jugador()
+                            elif opcion_usuario == 2:
+                                simulacion_de_combate()
+                            elif opcion_usuario == 3:
+                                simular_torneo_jugador()
+                            elif opcion_usuario == 4:
+                                ranking_consulta()
+                            elif opcion_usuario == 5:
+                                guardar_usuario(archivo, usuarios)
+                                print("Progreso guardado exitosamente")
+                            elif opcion_usuario == 0:
+                                print("Saliendo del menu de opciones.")
+                                break
+                            else:
+                                print("Opcion no valida. Intente nuevamente")
+                    elif opciones == 0:
+                        print("Saliendo del rol jugador.")
+                        break
+                    else:
+                        print("Opcion no valida. Intente nuevamente")
+                except ValueError:
+                    print("Entrada no valida. Ingrese un numero")
+                
+        elif opcion_principal == 0:
+            print("Gracias por usar el sistema. Saliendo.")
+            break
+        else: 
+            print("Opcion no valida. Intentelo nuevamente")
+    except ValueError:
+        print("Entrada no valida. Ingrese un numero")
