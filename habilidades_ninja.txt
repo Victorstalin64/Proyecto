@@ -1,10 +1,140 @@
 Naruto
-Ransengan,10
-Kage Bunshin,7
-Kurama Modo,6
+Ransengan,6
+Multiclones de sombra,5
+Rasenshuriken,8
 None
 None
 None
-Sennin Mode,7
+Modo sabio,8
+None
+None
+Kiba
+Ataque Fang Over Fang,10
+- Colmillo de rotación con Akamaru,7
+Transformación bestial combinada con su mascota,7
+None
+None
+None
+- Olfato sobrehumano para rastreo,10
+None
+None
+Shikamaru
+Control de sombras,6
+- Estrangulamiento de sombra,10
+Control de múltiples enemigos a la vez,9
+None
+None
+None
+Estrategia y análisis táctico avanzado,10
+None
+None
+Temari
+- Corte de viento con abanico,9
+Ataques de largo alcance,7
+Defensa aérea y dispersión de enemigos,10
+None
+None
+None
+Manipulación del campo de batalla con ráfagas,10
+None
+None
+Sai
+Creación de animales con tinta,8
+- Dragones de tinta para combate aéreo,5
+Detección remota usando tinta viva,5
+None
+None
+None
+Comunicación por dibujos,6
+None
+None
+Gaara
+Defensa absoluta con arena,10
+Ataque de ataúd de arena,8
+Control de terreno y barreras,9
+None
+None
+None
+Cúpula de arena,7
+None
+None
+Kisame
+- Fusión con Samehada,10
+Absorción de chakra,10
+Técnica del tiburón acuático,5
+None
+None
+None
+Tsunami de agua,10
+None
+None
+Tente
+Invocación de armas múltiples,10
+Uso de pergaminos explosivos,8
+Ataques combinados a distancia,6
+None
+None
+None
+Técnica de precisión con shurikens y kunais,5
+None
+None
+Kakashi
+Copia de técnicas con Sharingan,6
+Chidori,8
+Liderazgo estratégico,9
+None
+None
+None
+Kamui,5
+None
+None
+Hinata
+Visión de 360°,8
+Golpes suaves al sistema de chakra,10
+Ocho trigramas sesenta y cuatro golpes,5
+None
+None
+None
+Protección giratoria celestial,6
+None
+None
+Sasuke
+Chidori,7
+- Katon,7
+Control de Susanoo,5
+None
+None
+None
+Amaterasu,10
+None
+None
+Neji
+Golpes de precisión al sistema interno,6
+Rotación de palma celestial,7
+Predicción de movimientos enemigos,7
+None
+None
+None
+Defensa de trigrama,7
+None
+None
+Itachi
+- Ilusiones visuales avanzadas,8
+Tsukuyomi,6
+Susanoo defensivo y ofensivo,6
+None
+None
+None
+- Amaterasu,8
+None
+None
+Lee
+- Apertura de puertas de chakra,7
+Velocidad extrema,10
+Combo dinámico de patadas,5
+None
+None
+None
+Técnica del loto primario,8
 None
 None

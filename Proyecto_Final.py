@@ -3,10 +3,12 @@ from io import open #Abrir archivos compatibles con python
 import os  #Verificacion de archivos
 import re  #Validar patrones de texto
 import random #Numeros aleatorios 
+import datetime #Fecha y hora actual
 
 archivo = "usuarios.txt"
 ninjas_archivo = "ninjas.txt"
 habilidades = "habilidades_ninja.txt"
+progreso = "combates_usuario_email.txt"
 usuarios = []
 arboles_ninja = {}
 
@@ -253,6 +255,7 @@ def menu_opciones_jugador():
     print("3. Simular rondas del torneo")
     print("4. Consultar ranking")
     print("5. Guardar progreso")
+    print("6- Ver historial de combates")
     print("0. Salir")
 
 def validar_correo(correo):
@@ -363,7 +366,7 @@ def ver_arbol_jugador():
 
 ninjas_pelea = {nombre: crear_arbol_personalizado(nombre) for nombre in ninjas} 
 #simular rondas del torneo
-def ronda(nombre_ronda,participantes, ninjas_pelea):
+def ronda(nombre_ronda,participantes, ninjas_pelea, usuario_actual=None):
     print(f"{nombre_ronda.upper()} {len(participantes)} ninjas")
     cola = deque(participantes)
     siguiente_ronda = []
@@ -378,18 +381,18 @@ def ronda(nombre_ronda,participantes, ninjas_pelea):
         print(f"Puntos de {ninja1}: {puntos1}")
         print(f"Puntos de {ninja2}: {puntos2}")
         
-        if puntos1 > puntos2:
-            ganador = ninja1
-        elif puntos2 > puntos1:
-            ganador = ninja2
-        else:
-            ganador = random.choice([ninja1, ninja2])
-
+        ganador = ninja1 if puntos1 > puntos2 else ninja2 if puntos2 > puntos1 else random.choice([ninja1, ninja2])
         print(f"Ganador: {ganador} \n")
         siguiente_ronda.append(ganador)
-    return   siguiente_ronda
 
-def simular_torneo_jugador():
+        if usuario_actual:  # Guardar cada combate del torneo
+            guardar_combate_usuario(
+                usuario_actual,
+                f"Combate (Torneo): {ninja1} vs {ninja2} | Ganador: {ganador}"
+            )
+    return siguiente_ronda
+
+def simular_torneo_jugador(usuario_actual=None):
     print("Bienvenido al torneo de ninjas")
 
     if not arboles_ninja:
@@ -407,7 +410,7 @@ def simular_torneo_jugador():
     for nombre_ronda in rondas:
         if len(participantes) ==1:
             break
-        participantes = ronda(nombre_ronda, participantes, ninjas_pelea)
+        participantes = ronda(nombre_ronda, participantes, ninjas_pelea, usuario_actual)
 
     if participantes:
         campeon=participantes[0]
@@ -420,7 +423,7 @@ def habilidades_con_ninja(nodo):
         return 0
     return nodo.puntos + habilidades_con_ninja(nodo.izq) + habilidades_con_ninja(nodo.der)
 
-def simulacion_de_combate():
+def simulacion_de_combate(usuario_actual=None):
     ninjas = leer_ninjas()
     if len(ninjas) < 2:
         print("No hay suficientes ninjas para simular un combate")
@@ -466,6 +469,10 @@ def simulacion_de_combate():
     with open("combates.txt" ,"a" , encoding= "UTF-8") as f:
         f.write(f"{primer_ninja_seleccionado['Nombre']} VS {segundo_ninja_seleccionado['Nombre']} ➡️ Ganador: {ganador}\n")
         print("✅Resultado de los combates 1 vs 1 guardado correctamente.")
+        if usuario_actual:
+            guardar_combate_usuario(
+                usuario_actual,
+                f"Combate: {primer_ninja_seleccionado['Nombre']} vs {segundo_ninja_seleccionado['Nombre']} | Ganador: {ganador}")
 
 def ranking_consulta():
     if not os.path.exists("combates.txt"):
@@ -495,6 +502,28 @@ def ranking_consulta():
         for i, (ninja,vic) in enumerate(rank,1):
             f.write(f"{i}.{ninja} | {vic} victorias \n")
     print("\nRanking guardado exitosamente")
+
+def guardar_combate_usuario(email, resultado):
+    # Reemplazar caracteres no válidos en el nombre del archivo
+    nombre_archivo = f"combates_usuario_{email.replace('@', '_').replace('.', '_')}.txt"
+    fecha_actual = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    try:
+        with open(nombre_archivo, "a", encoding="utf-8") as f:
+            f.write(f"{fecha_actual} - {resultado}\n")
+    except Exception as e:
+        print(f"Error al guardar combate personal: {e}")
+
+def mostrar_historial_usuario(email):
+    nombre_archivo = f"combates_usuario_{email.replace('@', '_').replace('.', '_')}.txt"
+    if not os.path.exists(nombre_archivo):
+        print("No tienes combates registrados aún.")
+        return
+    
+    print(f"\n📜 Historial de combates de {email}:")
+    with open(nombre_archivo, "r", encoding="utf-8") as f:
+        for linea in f:
+            print(linea.strip())
+
 #Bucle 
 while True:
     print("--------MENU PRINCIPAL---------")
@@ -556,7 +585,7 @@ while True:
                             if opcion_usuario == 1:
                                 ver_arbol_jugador()
                             elif opcion_usuario == 2:
-                                simulacion_de_combate()
+                                simulacion_de_combate(usuario_actual)
                             elif opcion_usuario == 3:
                                 simular_torneo_jugador()
                             elif opcion_usuario == 4:
@@ -564,6 +593,8 @@ while True:
                             elif opcion_usuario == 5:
                                 guardar_usuario(archivo, usuarios)
                                 print("Progreso guardado exitosamente")
+                            elif opcion_usuario == 6:
+                                mostrar_historial_usuario(usuario_actual)
                             elif opcion_usuario == 0:
                                 print("Saliendo del menu de opciones.")
                                 break
